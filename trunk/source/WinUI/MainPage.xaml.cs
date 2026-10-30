@@ -522,6 +522,11 @@ namespace FilesHashWUI
                 strFileCRC32 = resultData.CRC32.ToLower();
             }
 
+            m_inlinesQueue.Add(WinUIHelper.GenRunFromString("CRC32: "));
+            Hyperlink hyperlinkCRC32 = GenHyperlinkFromStringForRichTextMain(strFileCRC32);
+            m_hyperlinksMain.Add(hyperlinkCRC32);
+            m_inlinesQueue.Add(hyperlinkCRC32);
+            m_inlinesQueue.Add(WinUIHelper.GenRunFromString("\r\n"));
             m_inlinesQueue.Add(WinUIHelper.GenRunFromString("MD5: "));
             Hyperlink hyperlinkMD5 = GenHyperlinkFromStringForRichTextMain(strFileMD5);
             m_hyperlinksMain.Add(hyperlinkMD5);
@@ -541,11 +546,6 @@ namespace FilesHashWUI
             Hyperlink hyperlinkSHA512 = GenHyperlinkFromStringForRichTextMain(strFileSHA512);
             m_hyperlinksMain.Add(hyperlinkSHA512);
             m_inlinesQueue.Add(hyperlinkSHA512);
-            m_inlinesQueue.Add(WinUIHelper.GenRunFromString("\r\n"));
-            m_inlinesQueue.Add(WinUIHelper.GenRunFromString("CRC32: "));
-            Hyperlink hyperlinkCRC32 = GenHyperlinkFromStringForRichTextMain(strFileCRC32);
-            m_hyperlinksMain.Add(hyperlinkCRC32);
-            m_inlinesQueue.Add(hyperlinkCRC32);
             m_inlinesQueue.Add(WinUIHelper.GenRunFromString("\r\n\r\n"));
 
             if (CanUpdateTextMain())
