@@ -246,10 +246,26 @@ namespace FilesHashWUI
             m_advTaskbarHelper.SetTaskbarProg(prog);
         }
 
+        public void ActivateWindow()
+        {
+            if (HWNDHandle == IntPtr.Zero)
+                return;
+
+            if (Win32Helper.IsWindowMinimized(HWNDHandle))
+                Win32Helper.RestoreWindow(HWNDHandle);
+
+            Activate();
+            Win32Helper.SetForegroundWindow(HWNDHandle);
+        }
+
         public void OnRedirected(AppActivationArguments args)
         {
             string strAppActiveArgs = WinUIHelper.GetLaunchActivatedEventArgs(args);
-            DispatcherQueue.TryEnqueue(() => RedirectedEventHandler?.Invoke(strAppActiveArgs));
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ActivateWindow();
+                RedirectedEventHandler?.Invoke(strAppActiveArgs);
+            });
         }
 
         private void FrameMain_Loaded(object sender, RoutedEventArgs e)
@@ -284,6 +300,12 @@ namespace FilesHashWUI
             }
 
             SaveWindowPosSize();
+
+            if (Application.Current is App app)
+            {
+                app.OnMainWindowClosed();
+            }
+            DispatcherQueue.TryEnqueue(() => Application.Current.Exit());
         }
 
         private void GridRoot_DragOver(object sender, DragEventArgs e)

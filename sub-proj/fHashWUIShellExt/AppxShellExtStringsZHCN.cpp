@@ -1,4 +1,4 @@
-#include "AppxShellExtStringsZHCN.h"
+ï»¿#include "AppxShellExtStringsZHCN.h"
 
 #include <tchar.h>
 
@@ -6,8 +6,8 @@ AppxShlExtStringsZHCN::AppxShlExtStringsZHCN()
 {
 	// Shell ext
 #if defined (_DEBUG)
-	m_stringsMap[_T("SHELL_EXT_DISPLAY_NAME")] = _T("Ê¹ÓÃ fHash DEV ¼ÆËã¹þÏ£");
+	m_stringsMap[_T("SHELL_EXT_DISPLAY_NAME")] = _T("ä½¿ç”¨ fHash DEV è®¡ç®—å“ˆå¸Œ");
 #else
-	m_stringsMap[_T("SHELL_EXT_DISPLAY_NAME")] = _T("Ê¹ÓÃ fHash ¼ÆËã¹þÏ£");
+	m_stringsMap[_T("SHELL_EXT_DISPLAY_NAME")] = _T("ä½¿ç”¨ fHash è®¡ç®—å“ˆå¸Œ");
 #endif
 }

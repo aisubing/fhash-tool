@@ -37,6 +37,21 @@ namespace SunJWBase
             PInvoke.ShowWindow(new HWND(hWnd), SHOW_WINDOW_CMD.SW_MAXIMIZE);
         }
 
+        public static bool IsWindowMinimized(IntPtr hWnd)
+        {
+            WINDOWPLACEMENT windowPlacement = default;
+            if (PInvoke.GetWindowPlacement(new HWND(hWnd), ref windowPlacement))
+            {
+                return windowPlacement.showCmd == SHOW_WINDOW_CMD.SW_SHOWMINIMIZED;
+            }
+            return false;
+        }
+
+        public static void RestoreWindow(IntPtr hWnd)
+        {
+            PInvoke.ShowWindow(new HWND(hWnd), SHOW_WINDOW_CMD.SW_RESTORE);
+        }
+
         public static bool SetForegroundWindow(IntPtr hWnd)
         {
             return PInvoke.SetForegroundWindow(new HWND(hWnd));
