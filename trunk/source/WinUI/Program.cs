@@ -29,7 +29,10 @@ namespace FilesHashWUI
                 });
             }
 
-            return;
+            // A redirected instance has no window, and WinUI can keep a windowless
+            // process alive after the last window closes. Exit deterministically so
+            // the process never holds the single-instance key.
+            Environment.Exit(0);
         }
 
         private static bool DecideRedirection()
@@ -58,7 +61,7 @@ namespace FilesHashWUI
                 keyInstance.RedirectActivationToAsync(args).AsTask().Wait();
                 redirectSemaphore.Release();
             });
-            redirectSemaphore.WaitOne();
+            redirectSemaphore.WaitOne(TimeSpan.FromSeconds(5));
         }
 
         private static void OnActivated(object sender, AppActivationArguments args)
