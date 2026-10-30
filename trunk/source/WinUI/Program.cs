@@ -1,77 +1,70 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.Windows.AppLifecycle;
 using SunJWBase;
 
 namespace FilesHashWUI
 {
     public static class Program
     {
-        private const string AppInstanceKey = "FilesHashWUI";
+        private const string SingleInstanceMutexName = @"Local\fHashWUI.SingleInstance";
+        private const string MainWindowTitle = "fHash";
 
         [STAThread]
         static void Main(string[] args)
         {
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-            bool isRedirect = DecideRedirection();
-            if (!isRedirect)
+            using Mutex mutex = new Mutex(true, SingleInstanceMutexName, out bool createdNew);
+            if (!createdNew && !HasPathsArgument(args) && TryActivateExistingWindow())
             {
-                Application.Start((p) =>
-                {
-                    var context = new DispatcherQueueSynchronizationContext(
-                        DispatcherQueue.GetForCurrentThread());
-                    SynchronizationContext.SetSynchronizationContext(context);
-                    new App();
-                });
+                Environment.Exit(0);
             }
 
-            // A redirected instance has no window, and WinUI can keep a windowless
-            // process alive after the last window closes. Exit deterministically so
-            // the process never holds the single-instance key.
+            Application.Start((p) =>
+            {
+                var context = new DispatcherQueueSynchronizationContext(
+                    DispatcherQueue.GetForCurrentThread());
+                SynchronizationContext.SetSynchronizationContext(context);
+                new App();
+            });
+
+            // A windowless process must not keep the single-instance mutex alive.
             Environment.Exit(0);
         }
 
-        private static bool DecideRedirection()
+        private static bool HasPathsArgument(string[] args)
         {
-            bool isRedirect = false;
-            AppActivationArguments args = WinUIHelper.GetCurrentActivatedEventArgs();
-            AppInstance keyInstance = AppInstance.FindOrRegisterForKey(AppInstanceKey);
-
-            if (keyInstance.IsCurrent)
+            foreach (string arg in args)
             {
-                keyInstance.Activated += OnActivated;
+                if (string.Equals(arg, "-paths", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
-            else
-            {
-                isRedirect = true;
-                RedirectActivationTo(keyInstance, args);
-            }
-            return isRedirect;
+            return false;
         }
 
-        public static void RedirectActivationTo(AppInstance keyInstance, AppActivationArguments args)
+        private static bool TryActivateExistingWindow()
         {
-            var redirectSemaphore = new Semaphore(0, 1);
-            Task.Run(() =>
+            IntPtr hWnd = FindWindow(null, MainWindowTitle);
+            if (hWnd == IntPtr.Zero)
             {
-                keyInstance.RedirectActivationToAsync(args).AsTask().Wait();
-                redirectSemaphore.Release();
-            });
-            redirectSemaphore.WaitOne(TimeSpan.FromSeconds(5));
+                return false;
+            }
+
+            if (Win32Helper.IsWindowMinimized(hWnd))
+            {
+                Win32Helper.RestoreWindow(hWnd);
+            }
+
+            Win32Helper.SetForegroundWindow(hWnd);
+            return true;
         }
 
-        private static void OnActivated(object sender, AppActivationArguments args)
-        {
-            // ExtendedActivationKind kind = args.Kind;
-            App appCurrent = Application.Current as App;
-            if (appCurrent != null)
-            {
-                appCurrent.OnRedirected(args);
-            }
-        }
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
     }
 }
