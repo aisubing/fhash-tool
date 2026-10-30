@@ -1,15 +1,17 @@
-### An open source files hash calculator for Windows and macOS.
+### An open source files hash calculator for Windows.
  * MD5, SHA1, SHA256, SHA512 and CRC32.
  * Support drag & drop.
- * Integrated with context menu in Explorer/Finder.
+ * Integrated with context menu in Explorer.
  * Support Windows 7 (fHash legacy only), Windows 10 (1903) and later (x64 and arm64).
- * Support macOS 15 and later.
  * Support Dark Mode.
  * English and Simplified Chinese UI.
 
 The icon "希" is from hash in Chinese "哈希".   
 
-Project site: https://github.com/sunjw/fhash
+### CHANGES
+Upstream project: https://github.com/sunjw/fhash
+
+This fork restores CRC32 hashing and replaces the Microsoft Store distribution with a traditional Windows installer. Thanks to Sun Junwen for the original fHash.
 
 <a href="https://ko-fi.com/Y8Y72L3FZ"><img src="https://cdn.ko-fi.com/cdn/kofi4.png?v=2" alt="Buy Me a Coffee at ko-fi.com" height="36"></a>
 
@@ -17,7 +19,6 @@ Project site: https://github.com/sunjw/fhash
 | Platform ||
 | --- | --- |
 | Windows 10 and later (x64 installer) | [![Image of GitHub](https://raw.githubusercontent.com/sunjw/fhash/master/assets/GitHub_Logo_White.png)](../../releases/latest) |
-| macOS | [![Image of GitHub](https://raw.githubusercontent.com/sunjw/fhash/master/assets/GitHub_Logo_White.png)](../../releases/latest) |
 
 #### Windows installer
 Download `fHash-<version>-x64-setup.exe` from Releases and run it.
@@ -26,12 +27,6 @@ Download `fHash-<version>-x64-setup.exe` from Releases and run it.
 * Adds the "Hash with fHash" Explorer context menu and a Start Menu shortcut.
 * Uninstalls from Settings > Apps.
 * The installer is not code-signed, so SmartScreen may show "Windows protected your PC". Choose "More info" > "Run anyway".
-
-#### Homebrew
-```
-brew tap sunjw/tap
-brew install --cask fhash
-```
 
 ### BUILD THE WINDOWS INSTALLER
 Requires Visual Studio 2022/2026 with the C++ and .NET 10 tooling, Windows SDK 10.0.26100.0, and Inno Setup 6 or 7.
@@ -55,13 +50,7 @@ Windows
 ![Image of light and dark mode](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_calc_proc_light_cut_fusion.jpg)   
 ![Image of main dialog](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_start_light_cut.jpg)   
 ![Image of about dialog](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_about_dark_cut.jpg)   
-![Image of Finder context menu](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_context_menu_light_cut.jpg)   
+![Image of Explorer context menu](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_context_menu_light_cut.jpg)   
 ![Image of hash result in light mode](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_calc_done_light_cut.jpg)   
 ![Image of hash result in dark mode](https://raw.githubusercontent.com/sunjw/fhash/master/assets/win_uwp_calc_context_dark_cut.jpg)   
-macOS   
-![Image of light and dark mode](https://raw.githubusercontent.com/sunjw/fhash/master/assets/mac_bigsur_progress_joint.jpg)   
-![Image of main dialog](https://raw.githubusercontent.com/sunjw/fhash/master/assets/mac_bigsur_start.jpg)   
-![Image of about dialog](https://raw.githubusercontent.com/sunjw/fhash/master/assets/mac_bigsur_about_dark.jpg)   
-![Image of Finder context menu](https://raw.githubusercontent.com/sunjw/fhash/master/assets/mac_bigsur_context_menu.jpg)   
-![Image of hash result in light mode](https://raw.githubusercontent.com/sunjw/fhash/master/assets/mac_bigsur_result.jpg)   
-![Image of hash result in dark mode](https://raw.githubusercontent.com/sunjw/fhash/master/assets/mac_bigsur_result_dark.jpg)   
+   

@@ -6,7 +6,7 @@
 #define MyAppName "fHash"
 #define MyAppExeName "fHashWUI.exe"
 #define MyAppPublisher "SUN Junwen"
-#define MyAppURL "https://github.com/sunjw/fhash"
+#define MyAppURL "https://github.com/aisubing/fhash-tool"
 
 #define MyAppVersion GetEnv("FHASH_VERSION")
 #if MyAppVersion == ""
