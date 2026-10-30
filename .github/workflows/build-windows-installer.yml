@@ -21,26 +21,6 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Install Windows SDK 10.0.22621.0
-        shell: pwsh
-        run: |
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vsPath = & $vswhere -latest -products * -property installationPath | Select-Object -First 1
-          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
-          & $installer modify --installPath $vsPath --add Microsoft.VisualStudio.Component.Windows11SDK.22621 --quiet --norestart --force
-          if ($LASTEXITCODE -notin @(0, 3010)) {
-            throw "Visual Studio installer failed with exit code $LASTEXITCODE"
-          }
-
-          $sdkPath = "${env:ProgramFiles(x86)}\Windows Kits\10\Include\10.0.22621.0"
-          $deadline = (Get-Date).AddMinutes(10)
-          while (-not (Test-Path $sdkPath) -and (Get-Date) -lt $deadline) {
-            Start-Sleep -Seconds 10
-          }
-          if (-not (Test-Path $sdkPath)) {
-            throw "Windows SDK 10.0.22621.0 was not installed"
-          }
-
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 

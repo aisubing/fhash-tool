@@ -34,7 +34,7 @@ brew install --cask fhash
 ```
 
 ### BUILD THE WINDOWS INSTALLER
-Requires Visual Studio 2022/2026 with the C++ and .NET 10 tooling, Windows SDK 10.0.22621.0, and Inno Setup 6 or 7.
+Requires Visual Studio 2022/2026 with the C++ and .NET 10 tooling, Windows SDK 10.0.26100.0, and Inno Setup 6 or 7.
 
 ```
 pwsh trunk\package_win_wui.ps1

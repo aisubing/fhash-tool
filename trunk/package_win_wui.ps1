@@ -97,12 +97,12 @@ $commonProperties = @{
     PlatformToolset = $platformToolset
 }
 
-# The C++ projects and the app target Windows SDK 10.0.22621.0. Building the
-# bridge with a newer SDK makes its mixed-mode metadata incompatible with the
-# app (MSB3851), so require the exact SDK instead of falling back.
+# The app and the C++/CLI bridge target Windows SDK 10.0.26100.0. The bridge's
+# mixed-mode metadata must match the app, otherwise the reference is rejected
+# (MSB3851).
 $sdkInclude = Join-Path ${env:ProgramFiles(x86)} "Windows Kits\10\Include"
-if (-not (Test-Path (Join-Path $sdkInclude "10.0.22621.0"))) {
-    throw "Windows SDK 10.0.22621.0 not found. Install 'Windows 11 SDK (10.0.22621.0)' in Visual Studio."
+if (-not (Test-Path (Join-Path $sdkInclude "10.0.26100.0"))) {
+    throw "Windows SDK 10.0.26100.0 not found. Install 'Windows 11 SDK (10.0.26100.0)' in Visual Studio."
 }
 
 $appProject = Join-Path $TrunkDir "source\WinUI\fHashWUI.csproj"
