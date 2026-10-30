@@ -44,7 +44,7 @@
   <ItemGroup>
     <!-- C++/CLI projects cannot consume RID-specific publish properties. -->
     <ProjectReference Include="..\..\..\sub-proj\fHashClrBridge\fHashClrBridge.vcxproj">
-      <GlobalPropertiesToRemove>TargetFramework;RuntimeIdentifier;SelfContained;PublishDir;WindowsPackageType</GlobalPropertiesToRemove>
+      <GlobalPropertiesToRemove>RuntimeIdentifier;SelfContained</GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>
 
