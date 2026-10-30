@@ -241,17 +241,28 @@ namespace SunJWBase
 
         public static void SaveLocalSettings(string key, object val)
         {
+            SaveLocalSettings(new Dictionary<string, object> { { key, val } });
+        }
+
+        public static void SaveLocalSettings(Dictionary<string, object> values)
+        {
             if (Win32Helper.IsAppPackaged())
             {
                 ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-                localSettings.Values[key] = val;
+                foreach (KeyValuePair<string, object> kv in values)
+                {
+                    localSettings.Values[kv.Key] = kv.Value;
+                }
                 return;
             }
 
             try
             {
                 Dictionary<string, string> settings = LoadUnpackagedSettings();
-                settings[key] = Convert.ToString(val, CultureInfo.InvariantCulture) ?? string.Empty;
+                foreach (KeyValuePair<string, object> kv in values)
+                {
+                    settings[kv.Key] = Convert.ToString(kv.Value, CultureInfo.InvariantCulture) ?? string.Empty;
+                }
                 List<string> lines = [];
                 foreach (KeyValuePair<string, string> kv in settings)
                 {

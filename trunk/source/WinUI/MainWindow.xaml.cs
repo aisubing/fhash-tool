@@ -250,15 +250,19 @@ namespace FilesHashWUI
             windowSize.Width = Win32Helper.GetUnscaledPixel(windowSize.Width, Scale);
             windowSize.Height = Win32Helper.GetUnscaledPixel(windowSize.Height, Scale);
 
-            WinUIHelper.SaveLocalSettings(KeyWinMaximize, windowMaximize);
+            Dictionary<string, object> settings = new()
+            {
+                [KeyWinMaximize] = windowMaximize,
+            };
             if (!windowMaximize)
             {
                 // not override normal position and size
-                WinUIHelper.SaveLocalSettings(KeyWinPosX, windowPos.X);
-                WinUIHelper.SaveLocalSettings(KeyWinPosY, windowPos.Y);
-                WinUIHelper.SaveLocalSettings(KeyWinSizeWidth, windowSize.Width);
-                WinUIHelper.SaveLocalSettings(KeyWinSizeHeight, windowSize.Height);
+                settings[KeyWinPosX] = windowPos.X;
+                settings[KeyWinPosY] = windowPos.Y;
+                settings[KeyWinSizeWidth] = windowSize.Width;
+                settings[KeyWinSizeHeight] = windowSize.Height;
             }
+            WinUIHelper.SaveLocalSettings(settings);
         }
 
         public void SetTaskbarProgress(ulong prog)
