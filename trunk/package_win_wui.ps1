@@ -107,10 +107,17 @@ if (-not (Test-Path (Join-Path $sdkInclude "10.0.22621.0"))) {
 $appProject = Join-Path $TrunkDir "source\WinUI\fHashWUI.csproj"
 $bridgeProject = Join-Path $RepoRoot "sub-proj\fHashClrBridge\fHashClrBridge.vcxproj"
 
-# The C++/CLI bridge uses PackageReference support, so its assets file must be
-# generated before any project is built.
+$publishProperties = $commonProperties.Clone()
+$publishProperties["RuntimeIdentifier"] = "win-x64"
+$publishProperties["SelfContained"] = "true"
+$publishProperties["WindowsPackageType"] = "None"
+$publishProperties["PublishDir"] = $PublishDir + "\"
+
+# Restore the app for the publish RID, then restore the bridge with its own
+# properties. The bridge is built without the app's publish properties (see
+# GlobalPropertiesToRemove in fHashWUI.csproj), so its assets file must stay RID-free.
+Invoke-MSBuild -Project $appProject -Targets @("Restore") -Properties $publishProperties
 Invoke-MSBuild -Project $bridgeProject -Targets @("Restore") -Properties $commonProperties
-Invoke-MSBuild -Project $appProject -Targets @("Restore") -Properties $commonProperties
 
 Invoke-MSBuild -Project (Join-Path $RepoRoot "sub-proj\fHashWUINative\fHashWUINative.vcxproj") -Properties $commonProperties
 Invoke-MSBuild -Project $bridgeProject -Properties $commonProperties
@@ -120,11 +127,6 @@ Remove-Item $PublishDir -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $PublishDir -Force | Out-Null
 New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
 
-$publishProperties = $commonProperties.Clone()
-$publishProperties["RuntimeIdentifier"] = "win-x64"
-$publishProperties["SelfContained"] = "true"
-$publishProperties["WindowsPackageType"] = "None"
-$publishProperties["PublishDir"] = $PublishDir + "\"
 Invoke-MSBuild -Project $appProject -Targets @("Publish") -Properties $publishProperties
 
 $bridgeDll = Join-Path $NativeOutDir "fHashClrBridge\fHashClrBridge.dll"
