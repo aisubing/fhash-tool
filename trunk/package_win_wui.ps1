@@ -67,7 +67,7 @@ function Invoke-MSBuild {
 
 function Get-AppVersion {
     $assemblyInfo = Join-Path $TrunkDir "source\WinUI\Properties\AssemblyInfo.cs"
-    $match = Select-String -Path $assemblyInfo -Pattern 'AssemblyVersion\("([^"]+)"\)' |
+    $match = Select-String -Path $assemblyInfo -Pattern '^\s*\[assembly:\s*AssemblyVersion\("([^"]+)"\)\]' |
         Select-Object -First 1
     if (-not $match) {
         throw "Cannot read AssemblyVersion from $assemblyInfo"
@@ -97,11 +97,12 @@ $commonProperties = @{
     PlatformToolset = $platformToolset
 }
 
-# The projects pin Windows SDK 10.0.22621.0; fall back to the latest installed
-# SDK when that exact version is not present on the build machine.
+# The C++ projects and the app target Windows SDK 10.0.22621.0. Building the
+# bridge with a newer SDK makes its mixed-mode metadata incompatible with the
+# app (MSB3851), so require the exact SDK instead of falling back.
 $sdkInclude = Join-Path ${env:ProgramFiles(x86)} "Windows Kits\10\Include"
 if (-not (Test-Path (Join-Path $sdkInclude "10.0.22621.0"))) {
-    $commonProperties["WindowsTargetPlatformVersion"] = "10.0"
+    throw "Windows SDK 10.0.22621.0 not found. Install 'Windows 11 SDK (10.0.22621.0)' in Visual Studio."
 }
 
 $appProject = Join-Path $TrunkDir "source\WinUI\fHashWUI.csproj"
