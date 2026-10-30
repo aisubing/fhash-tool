@@ -113,14 +113,13 @@ $publishProperties["SelfContained"] = "true"
 $publishProperties["WindowsPackageType"] = "None"
 $publishProperties["PublishDir"] = $PublishDir + "\"
 
-# Restore the app for the publish RID, then restore the bridge with its own
-# properties. The bridge is built without the app's publish properties (see
-# GlobalPropertiesToRemove in fHashWUI.csproj), so its assets file must stay RID-free.
+# Restore app and bridge with the same RID as the publish. C++/CLI projects do
+# not infer the RID target, so its assets file must be generated explicitly.
 Invoke-MSBuild -Project $appProject -Targets @("Restore") -Properties $publishProperties
-Invoke-MSBuild -Project $bridgeProject -Targets @("Restore") -Properties $commonProperties
+Invoke-MSBuild -Project $bridgeProject -Targets @("Restore") -Properties $publishProperties
 
 Invoke-MSBuild -Project (Join-Path $RepoRoot "sub-proj\fHashWUINative\fHashWUINative.vcxproj") -Properties $commonProperties
-Invoke-MSBuild -Project $bridgeProject -Properties $commonProperties
+Invoke-MSBuild -Project $bridgeProject -Properties $publishProperties
 Invoke-MSBuild -Project (Join-Path $RepoRoot "sub-proj\fHashWUIShellExt\fHashWUIShellExt.vcxproj") -Properties $commonProperties
 
 Remove-Item $PublishDir -Recurse -Force -ErrorAction SilentlyContinue

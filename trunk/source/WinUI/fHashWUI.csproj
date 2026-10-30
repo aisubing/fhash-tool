@@ -42,10 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- C++/CLI projects cannot consume RID-specific publish properties. -->
-    <ProjectReference Include="..\..\..\sub-proj\fHashClrBridge\fHashClrBridge.vcxproj">
-      <GlobalPropertiesToRemove>RuntimeIdentifier;SelfContained</GlobalPropertiesToRemove>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\sub-proj\fHashClrBridge\fHashClrBridge.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
