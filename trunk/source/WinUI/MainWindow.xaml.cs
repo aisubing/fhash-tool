@@ -331,10 +331,6 @@ namespace FilesHashWUI
             {
                 app.OnMainWindowClosed();
             }
-
-            // Window.Closed has no open window left, so Application.Exit() can
-            // silently no-op and leave the process holding the single-instance key.
-            Environment.Exit(0);
         }
 
         private void GridRoot_DragOver(object sender, DragEventArgs e)
