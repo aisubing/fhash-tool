@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -250,7 +251,7 @@ namespace SunJWBase
             try
             {
                 Dictionary<string, string> settings = LoadUnpackagedSettings();
-                settings[key] = val?.ToString() ?? string.Empty;
+                settings[key] = Convert.ToString(val, CultureInfo.InvariantCulture) ?? string.Empty;
                 List<string> lines = [];
                 foreach (KeyValuePair<string, string> kv in settings)
                 {
@@ -284,7 +285,11 @@ namespace SunJWBase
             {
                 return boolValue;
             }
-            return strValue;
+            if (int.TryParse(strValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int intValue))
+            {
+                return intValue;
+            }
+            return null;
         }
     }
 }

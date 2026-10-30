@@ -190,31 +190,53 @@ namespace FilesHashWUI
             PointInt32 windowPos = new(-1, -1);
             SizeInt32 windowSize = new(Win32Helper.GetScaledPixel(AppPrefWidth, Scale), Win32Helper.GetScaledPixel(AppPrefHeight, Scale));
 
-            object objWinMaximize = WinUIHelper.LoadLocalSettings(KeyWinMaximize);
-            windowMaximize = (bool)(objWinMaximize ?? false);
-            object objWinPosX = WinUIHelper.LoadLocalSettings(KeyWinPosX);
-            object objWinPosY = WinUIHelper.LoadLocalSettings(KeyWinPosY);
-            if (objWinPosX != null && objWinPosY != null)
+            try
             {
-                windowPos.X = Win32Helper.GetScaledPixel((int)objWinPosX, Scale);
-                windowPos.Y = Win32Helper.GetScaledPixel((int)objWinPosY, Scale);
+                object objWinMaximize = WinUIHelper.LoadLocalSettings(KeyWinMaximize);
+                windowMaximize = (bool)(objWinMaximize ?? false);
+                object objWinPosX = WinUIHelper.LoadLocalSettings(KeyWinPosX);
+                object objWinPosY = WinUIHelper.LoadLocalSettings(KeyWinPosY);
+                if (objWinPosX != null && objWinPosY != null)
+                {
+                    windowPos.X = Win32Helper.GetScaledPixel((int)objWinPosX, Scale);
+                    windowPos.Y = Win32Helper.GetScaledPixel((int)objWinPosY, Scale);
+                }
+                object objWinSizeWidth = WinUIHelper.LoadLocalSettings(KeyWinSizeWidth);
+                object objWinSizeHeight = WinUIHelper.LoadLocalSettings(KeyWinSizeHeight);
+                if (objWinSizeWidth != null && objWinSizeHeight != null)
+                {
+                    int width = (int)objWinSizeWidth;
+                    int height = (int)objWinSizeHeight;
+                    if (width > 0 && height > 0)
+                    {
+                        windowSize.Width = Win32Helper.GetScaledPixel(width, Scale);
+                        windowSize.Height = Win32Helper.GetScaledPixel(height, Scale);
+                    }
+                }
             }
-            object objWinSizeWidth = WinUIHelper.LoadLocalSettings(KeyWinSizeWidth);
-            object objWinSizeHeight = WinUIHelper.LoadLocalSettings(KeyWinSizeHeight);
-            if (objWinSizeWidth != null && objWinSizeHeight != null)
+            catch (Exception)
             {
-                windowSize.Width = Win32Helper.GetScaledPixel((int)objWinSizeWidth, Scale);
-                windowSize.Height = Win32Helper.GetScaledPixel((int)objWinSizeHeight, Scale);
+                // A damaged settings file must never keep the window from opening.
+                windowMaximize = false;
+                windowPos = new(-1, -1);
+                windowSize = new(Win32Helper.GetScaledPixel(AppPrefWidth, Scale), Win32Helper.GetScaledPixel(AppPrefHeight, Scale));
             }
 
-            AppWindow.Resize(windowSize);
-            if (windowPos.X != -1 && windowPos.Y != -1)
+            try
             {
-                AppWindow.Move(windowPos);
+                AppWindow.Resize(windowSize);
+                if (windowPos.X != -1 && windowPos.Y != -1)
+                {
+                    AppWindow.Move(windowPos);
+                }
+                if (windowMaximize)
+                {
+                    Win32Helper.MaximizeWindow(HWNDHandle);
+                }
             }
-            if (windowMaximize)
+            catch (Exception)
             {
-                Win32Helper.MaximizeWindow(HWNDHandle);
+                // Invalid saved geometry must not prevent the window from opening.
             }
         }
 
