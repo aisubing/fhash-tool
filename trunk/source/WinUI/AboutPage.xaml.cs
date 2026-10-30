@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -40,9 +42,7 @@ namespace FilesHashWUI
             TextBlockAboutTitle.Inlines.Add(runAboutTitle);
 
             string strAboutInfoTitle = m_resourceLoaderMain.GetString("AboutInfoTitle");
-            PackageVersion packVersion = Package.Current.Id.Version;
-            string strVersion = string.Format("{0}.{1}.{2}.{3}",
-                packVersion.Major, packVersion.Minor, packVersion.Build, packVersion.Revision);
+            string strVersion = GetAppVersion();
             string strArch = nativeHelper.GetTargetArch();
             string strRight = m_resourceLoaderMain.GetString("AboutInfoRight");
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strAboutInfoTitle));
@@ -60,11 +60,14 @@ namespace FilesHashWUI
             string strInfoMD5 = m_resourceLoaderMain.GetString("AboutInfoMD5");
             string strInfoSHA256 = m_resourceLoaderMain.GetString("AboutInfoSHA256");
             string strInfoSHA512 = m_resourceLoaderMain.GetString("AboutInfoSHA512");
+            string strInfoCRC32 = m_resourceLoaderMain.GetString("AboutInfoCRC32");
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strInfoMD5));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString("\r\n"));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strInfoSHA256));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString("\r\n"));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strInfoSHA512));
+            TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString("\r\n"));
+            TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strInfoCRC32));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString("\r\n\r\n"));
 
             string strAboutInfoOsTitle = m_resourceLoaderMain.GetString("AboutInfoOsTitle");
@@ -72,6 +75,33 @@ namespace FilesHashWUI
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strAboutInfoOsTitle));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString("\r\n"));
             TextBlockAbout.Inlines.Add(WinUIHelper.GenRunFromString(strOsInfo));
+        }
+
+        private static string GetAppVersion()
+        {
+            try
+            {
+                if (Win32Helper.IsAppPackaged())
+                {
+                    PackageVersion packVersion = Package.Current.Id.Version;
+                    return string.Format("{0}.{1}.{2}.{3}",
+                        packVersion.Major, packVersion.Minor, packVersion.Build, packVersion.Revision);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            string strExePath = Environment.ProcessPath;
+            if (string.IsNullOrEmpty(strExePath))
+            {
+                return string.Empty;
+            }
+
+            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(strExePath);
+            return string.Format("{0}.{1}.{2}.{3}",
+                fileVersion.FileMajorPart, fileVersion.FileMinorPart,
+                fileVersion.FileBuildPart, fileVersion.FilePrivatePart);
         }
 
         private void ButtonOK_Click(object sender, RoutedEventArgs e)

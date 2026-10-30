@@ -19,6 +19,11 @@
     <ApplicationIcon>Assets\fHashWUI.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <!-- Unpackaged (installer) builds carry their own Windows App SDK runtime. -->
+  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="AboutPage.xaml" />
     <None Remove="MainPage.xaml" />

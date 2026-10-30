@@ -33,6 +33,7 @@
 #include "Algorithms/SHA1.h"
 #include "Algorithms/sha256.h"
 #include "Algorithms/sha512.h"
+#include "Algorithms/CRC32.h"
 
 using namespace std;
 using namespace sunjwbase;
@@ -72,6 +73,11 @@ static void SHA256UpdateWrapper(struct sha256_ctx *ctx, const unsigned char *buf
 static void SHA512UpdateWrapper(SHA512_CTX *context, void *datain, size_t len)
 {
 	SHA512_Update(context, datain, len); // SHA512 update
+}
+
+static void CRC32UpdateWrapper(uint32_t *pCrc32, unsigned char *data, unsigned int len)
+{
+	crc32Update(pCrc32, data, len); // CRC32 update
 }
 
 static void UpdateProgressWrapper(uint64_t fsize, uint64_t totalSize, bool isSizeCaled, unsigned int dataBufLen,
@@ -137,10 +143,11 @@ int WINAPI HashThreadFunc(void *param)
 	tstring tstrFileSHA1;
 	tstring tstrFileSHA256;
 	tstring tstrFileSHA512;
+	tstring tstrFileCRC32;
 
 #if !defined (FHASH_SINGLE_THREAD_HASH_UPDATE)
-	// Create thread pool with 5 threads
-	ThreadPool threadPool(5);
+	// 1 worker drives the file loop, 5 update tasks run in parallel
+	ThreadPool threadPool(6);
 #endif
 
 	uiBridge->preparingCalc();
@@ -209,6 +216,8 @@ int WINAPI HashThreadFunc(void *param)
 		SHA512_CTX sha512Ctx; // SHA512 context
 		uint8_t digestSHA512[SHA512_DIGEST_LENGTH];
 		string strSHA512;
+
+		uint32_t ulCRC32; // CRC32 context
 		// Declaration for calculator
 
 		ResultData resultNew;
@@ -240,6 +249,7 @@ int WINAPI HashThreadFunc(void *param)
 			sha1.Reset(); // SHA1 init
 			sha256_init(&sha256Ctx); // SHA256 init
 			SHA512_Init(&sha512Ctx); // SHA512 init
+			crc32Init(&ulCRC32); // CRC32 init
 
 			uiBridge->updateProg(0);
 
@@ -333,11 +343,13 @@ int WINAPI HashThreadFunc(void *param)
 					future<void> taskSHA256Update = threadPool.enqueue(SHA256UpdateWrapper, &sha256Ctx, ptrDataBufCalc->data, ptrDataBufCalc->datalen);
 					future<void> taskSHA1Update = threadPool.enqueue(SHA1UpdateWrapper, &sha1, ptrDataBufCalc->data, ptrDataBufCalc->datalen);
 					future<void> taskMD5Update = threadPool.enqueue(MD5UpdateWrapper, &mdContext, ptrDataBufCalc->data, ptrDataBufCalc->datalen);
+					future<void> taskCRC32Update = threadPool.enqueue(CRC32UpdateWrapper, &ulCRC32, ptrDataBufCalc->data, ptrDataBufCalc->datalen);
 
 					taskSHA512Update.wait();
 					taskSHA256Update.wait();
 					taskSHA1Update.wait();
 					taskMD5Update.wait();
+					taskCRC32Update.wait();
 
 					// update progress
 					UpdateProgressWrapper(fsize, thrdData->totalSize, isSizeCaled, ptrDataBufCalc->datalen,
@@ -391,6 +403,7 @@ int WINAPI HashThreadFunc(void *param)
 				SHA1UpdateWrapper(&sha1, databuf.data, databuf.datalen); // SHA1 update
 				SHA256UpdateWrapper(&sha256Ctx, databuf.data, databuf.datalen); // SHA256 update
 				SHA512UpdateWrapper(&sha512Ctx, databuf.data, databuf.datalen); // SHA512 update
+				CRC32UpdateWrapper(&ulCRC32, databuf.data, databuf.datalen); // CRC32 update
 
 				// update progress
 				UpdateProgressWrapper(fsize, thrdData->totalSize, isSizeCaled, databuf.datalen,
@@ -422,6 +435,7 @@ int WINAPI HashThreadFunc(void *param)
 			sha1.Final(); // SHA1 final
 			sha256_final(&sha256Ctx); // SHA256 final
 			SHA512_Final(digestSHA512, &sha512Ctx); // SHA256 final
+			crc32Finish(&ulCRC32); // CRC32 final
 
 			if (!isSizeCaled)
 			{
@@ -504,11 +518,20 @@ int WINAPI HashThreadFunc(void *param)
 			}
 			tstrFileSHA512 = strtotstr(strSHA512);
 
+			// CRC32
+#if defined (_WIN32)
+			sprintf_s(chHashBuff, 1024, "%08X", ulCRC32);
+#else
+			snprintf(chHashBuff, 1024, "%08X", ulCRC32);
+#endif
+			tstrFileCRC32 = strtotstr(string(chHashBuff));
+
 			// all upper case
 			result.tstrMD5 = tstrFileMD5;
 			result.tstrSHA1 = tstrFileSHA1;
 			result.tstrSHA256 = tstrFileSHA256;
 			result.tstrSHA512 = tstrFileSHA512;
+			result.tstrCRC32 = tstrFileCRC32;
 
 			result.enumState = RESULT_ALL;
 

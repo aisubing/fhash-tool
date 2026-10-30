@@ -503,7 +503,7 @@ namespace FilesHashWUI
         private void AppendFileHashToTextMain(ResultDataNet resultData, bool uppercase)
         {
             m_outMainQueue += 1;
-            string strFileMD5, strFileSHA1, strFileSHA256, strFileSHA512;
+            string strFileMD5, strFileSHA1, strFileSHA256, strFileSHA512, strFileCRC32;
 
             if (uppercase)
             {
@@ -511,6 +511,7 @@ namespace FilesHashWUI
                 strFileSHA1 = resultData.SHA1.ToUpper();
                 strFileSHA256 = resultData.SHA256.ToUpper();
                 strFileSHA512 = resultData.SHA512.ToUpper();
+                strFileCRC32 = resultData.CRC32.ToUpper();
             }
             else
             {
@@ -518,6 +519,7 @@ namespace FilesHashWUI
                 strFileSHA1 = resultData.SHA1.ToLower();
                 strFileSHA256 = resultData.SHA256.ToLower();
                 strFileSHA512 = resultData.SHA512.ToLower();
+                strFileCRC32 = resultData.CRC32.ToLower();
             }
 
             m_inlinesQueue.Add(WinUIHelper.GenRunFromString("MD5: "));
@@ -539,6 +541,11 @@ namespace FilesHashWUI
             Hyperlink hyperlinkSHA512 = GenHyperlinkFromStringForRichTextMain(strFileSHA512);
             m_hyperlinksMain.Add(hyperlinkSHA512);
             m_inlinesQueue.Add(hyperlinkSHA512);
+            m_inlinesQueue.Add(WinUIHelper.GenRunFromString("\r\n"));
+            m_inlinesQueue.Add(WinUIHelper.GenRunFromString("CRC32: "));
+            Hyperlink hyperlinkCRC32 = GenHyperlinkFromStringForRichTextMain(strFileCRC32);
+            m_hyperlinksMain.Add(hyperlinkCRC32);
+            m_inlinesQueue.Add(hyperlinkCRC32);
             m_inlinesQueue.Add(WinUIHelper.GenRunFromString("\r\n\r\n"));
 
             if (CanUpdateTextMain())

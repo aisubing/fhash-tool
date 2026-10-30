@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4111D69D27F16A35001AD814 /* sha512.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4111D69C27F16A35001AD814 /* sha512.cpp */; };
+		A1C32C0DE000000000000002 /* CRC32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1C32C0DE000000000000001 /* CRC32.cpp */; };
 		4119D65F2B2012B70005D7E5 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4119D65E2B2012B70005D7E5 /* MainViewController.swift */; };
 		411E07D12F9B63CC00435298 /* LiquidGlassUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 411E07D02F9B63CC00435298 /* LiquidGlassUtils.swift */; };
 		413870E22B1F20C500448A6F /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 413870E12B1F20C500448A6F /* AboutViewController.swift */; };
@@ -47,6 +48,8 @@
 		410E26131B71C988004B3C9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
 		410E26141B71C9CC004B3C9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4111D69B27F16A35001AD814 /* sha512.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sha512.h; path = source/Algorithms/sha512.h; sourceTree = "<group>"; };
+		A1C32C0DE000000000000003 /* CRC32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CRC32.h; path = source/Algorithms/CRC32.h; sourceTree = "<group>"; };
+		A1C32C0DE000000000000001 /* CRC32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CRC32.cpp; path = source/Algorithms/CRC32.cpp; sourceTree = "<group>"; };
 		4111D69C27F16A35001AD814 /* sha512.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sha512.cpp; path = source/Algorithms/sha512.cpp; sourceTree = "<group>"; };
 		4119D65E2B2012B70005D7E5 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		411E07D02F9B63CC00435298 /* LiquidGlassUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassUtils.swift; sourceTree = "<group>"; };
@@ -157,6 +160,8 @@
 				41FF1DF11B5B4B470081F283 /* sha256.h */,
 				4111D69C27F16A35001AD814 /* sha512.cpp */,
 				4111D69B27F16A35001AD814 /* sha512.h */,
+				A1C32C0DE000000000000001 /* CRC32.cpp */,
+				A1C32C0DE000000000000003 /* CRC32.h */,
 			);
 			name = Algorithms;
 			sourceTree = "<group>";
@@ -331,6 +336,7 @@
 				417AC3D62B19CDC2003DFFAF /* NoTitlebarWindowController.swift in Sources */,
 				4119D65F2B2012B70005D7E5 /* MainViewController.swift in Sources */,
 				4111D69D27F16A35001AD814 /* sha512.cpp in Sources */,
+				A1C32C0DE000000000000002 /* CRC32.cpp in Sources */,
 				41FF1DDB1B5B4A5A0081F283 /* OsFilePosixDarwin.cpp in Sources */,
 				41FF1DDC1B5B4A5A0081F283 /* OsThreadPosixDarwin.cpp in Sources */,
 				41FF1DF41B5B4B470081F283 /* SHA1.cpp in Sources */,

@@ -23,6 +23,7 @@ namespace FilesHashWUI
 		System::String^ SHA1; // SHA1
 		System::String^ SHA256; // SHA256
 		System::String^ SHA512; // SHA512
+		System::String^ CRC32; // CRC32
 		System::String^ Error; // Error string
 	};
 }

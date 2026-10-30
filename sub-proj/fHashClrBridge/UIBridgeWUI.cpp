@@ -39,6 +39,7 @@ ResultDataNet FilesHashWUI::ConvertResultDataToNet(const ResultData& result)
 	resultDataNet.SHA1 = ConvertTstrToSystemString(result.tstrSHA1.c_str());
 	resultDataNet.SHA256 = ConvertTstrToSystemString(result.tstrSHA256.c_str());
 	resultDataNet.SHA512 = ConvertTstrToSystemString(result.tstrSHA512.c_str());
+	resultDataNet.CRC32 = ConvertTstrToSystemString(result.tstrCRC32.c_str());
 	resultDataNet.Error = ConvertTstrToSystemString(result.tstrError.c_str());
 
 	return resultDataNet;

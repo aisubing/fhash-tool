@@ -104,7 +104,8 @@ cli::array<ResultDataNet>^ HashMgmtClr::FindResult(String^ sstrHashToFind)
 			if (itr->tstrMD5.find(tstrHashToFind) != tstring::npos ||
 				itr->tstrSHA1.find(tstrHashToFind) != tstring::npos ||
 				itr->tstrSHA256.find(tstrHashToFind) != tstring::npos ||
-				itr->tstrSHA512.find(tstrHashToFind) != tstring::npos)
+				itr->tstrSHA512.find(tstrHashToFind) != tstring::npos ||
+				itr->tstrCRC32.find(tstrHashToFind) != tstring::npos)
 			{
 				findResultList.push_back(*itr);
 			}

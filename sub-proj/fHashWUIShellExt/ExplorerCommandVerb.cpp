@@ -35,6 +35,8 @@ static WCHAR const c_szAliasExecName[] = L"fHashWUI.exe";
 
 extern HINSTANCE g_hInst;
 
+__inline HRESULT ResolveWindowsAppExePath(LPCWSTR pszExecName, LPCWSTR pszAliasExecName, LPWSTR pszPath);
+
 class CExplorerCommandVerb : public IExplorerCommand,
                              public IInitializeCommand,
                              public IObjectWithSite
@@ -85,33 +87,14 @@ public:
 
     IFACEMETHODIMP GetIcon(IShellItemArray * /* psiItemArray */, LPWSTR *ppszIcon)
     {
-        // the icon ref ("dll,-<resid>") is provied here
-        TCHAR szModulePath[MAX_PATH + 1] = { 0 };
-        if (GetModuleFileName(g_hInst, szModulePath, MAX_PATH))
+        WCHAR szExecPath[MAX_PATH + 20] = { 0 };
+        if (SUCCEEDED(ResolveWindowsAppExePath(c_szExecName, c_szAliasExecName, szExecPath)) &&
+            GetFileAttributesW(szExecPath) != INVALID_FILE_ATTRIBUTES)
         {
-            sunjwbase::tstring tstrModuleFullPath(szModulePath);
-            sunjwbase::tstring tstrExeDirPath(tstrModuleFullPath);
-            sunjwbase::tstring::size_type idx = tstrExeDirPath.rfind(TEXT("\\"));
-            if (idx != sunjwbase::tstring::npos)
-            {
-                tstrExeDirPath = tstrExeDirPath.substr(0, idx);
-                idx = tstrExeDirPath.rfind(TEXT("\\"));
-                if (idx != sunjwbase::tstring::npos)
-                {
-                    tstrExeDirPath = tstrExeDirPath.substr(0, idx);
-                    sunjwbase::tstring tstrExeFullPath = tstrExeDirPath + TEXT("\\fHashWUI\\") + c_szExecName;
-                    // check file exists
-                    DWORD dwAttr = GetFileAttributes(tstrExeFullPath.c_str());
-                    if (dwAttr != INVALID_FILE_ATTRIBUTES && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY))
-                    {
-                        // MessageBox(_hwnd, tstrExeFullPath.c_str(), TEXT("GetIcon"), MB_OK);
-
-                        // the icon ref ("dll,-<resid>") is provied here
-                        sunjwbase::tstring tstrIconRef = tstrExeFullPath + TEXT(",0");
-                        return SHStrDup(tstrIconRef.c_str(), ppszIcon);
-                    }
-                }
-            }
+            // the icon ref ("exe,<index>") is provied here
+            sunjwbase::tstring tstrIconRef(szExecPath);
+            tstrIconRef.append(TEXT(",0"));
+            return SHStrDup(tstrIconRef.c_str(), ppszIcon);
         }
 
         // anything wrong, return NULL
@@ -201,19 +184,125 @@ private:
     IStream *_pstmShellItemArray;
 };
 
-__inline HRESULT ResolveWindowsAppExePath(LPCWSTR pszExecName, LPWSTR pszPath)
+__inline BOOL FileExistsForShellExt(LPCWSTR pszPath)
 {
-    WCHAR szUserPath[MAX_PATH + 20] = { 0 };
-    HRESULT hr = SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, szUserPath);
-    if (FAILED(hr))
+    if (!pszPath || !*pszPath)
     {
-        return hr;
+        return FALSE;
     }
 
-    StringCchPrintf(pszPath, MAX_PATH, L"%s\\AppData\\Local\\Microsoft\\WindowsApps\\%s",
-        szUserPath, pszExecName);
+    DWORD dwAttr = GetFileAttributesW(pszPath);
+    return (dwAttr != INVALID_FILE_ATTRIBUTES) && !(dwAttr & FILE_ATTRIBUTE_DIRECTORY);
+}
 
-    return 0;
+__inline BOOL ReadRegistryString(HKEY hRoot, LPCWSTR pszSubKey, LPCWSTR pszValueName,
+    LPWSTR pszValue, DWORD cchValue)
+{
+    HKEY hKey = NULL;
+    if (RegOpenKeyExW(hRoot, pszSubKey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
+    {
+        return FALSE;
+    }
+
+    DWORD dwType = 0;
+    DWORD cbValue = cchValue * static_cast<DWORD>(sizeof(WCHAR));
+    LONG lResult = RegQueryValueExW(hKey, pszValueName, NULL, &dwType,
+        (LPBYTE)pszValue, &cbValue);
+    RegCloseKey(hKey);
+
+    if (lResult != ERROR_SUCCESS || (dwType != REG_SZ && dwType != REG_EXPAND_SZ) ||
+        cbValue < sizeof(WCHAR))
+    {
+        return FALSE;
+    }
+
+    pszValue[(cbValue / static_cast<DWORD>(sizeof(WCHAR))) - 1] = L'\0';
+    pszValue[cchValue - 1] = L'\0';
+    return TRUE;
+}
+
+// Resolve the app executable for both the packaged (MSIX execution alias) and
+// unpackaged (installer) layouts.
+__inline HRESULT ResolveWindowsAppExePath(LPCWSTR pszExecName, LPCWSTR pszAliasExecName, LPWSTR pszPath)
+{
+    WCHAR szDir[MAX_PATH] = { 0 };
+
+    // Installer-written install location.
+    if (ReadRegistryString(HKEY_CURRENT_USER, L"Software\\fHash", L"InstallPath",
+        szDir, ARRAYSIZE(szDir)))
+    {
+        StringCchPrintf(pszPath, MAX_PATH, L"%s\\%s", szDir, pszExecName);
+        if (FileExistsForShellExt(pszPath))
+        {
+            return S_OK;
+        }
+    }
+
+    // App Paths, per-user then machine-wide.
+    WCHAR szAppPathSubKey[MAX_PATH] = { 0 };
+    StringCchPrintf(szAppPathSubKey, ARRAYSIZE(szAppPathSubKey),
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\%s", pszExecName);
+    if (ReadRegistryString(HKEY_CURRENT_USER, szAppPathSubKey, NULL, pszPath, MAX_PATH) ||
+        ReadRegistryString(HKEY_LOCAL_MACHINE, szAppPathSubKey, NULL, pszPath, MAX_PATH))
+    {
+        WCHAR *pszStart = pszPath;
+        if (*pszStart == L'"')
+        {
+            ++pszStart;
+            WCHAR *pszEnd = wcsrchr(pszStart, L'"');
+            if (pszEnd)
+            {
+                *pszEnd = L'\0';
+            }
+        }
+        if (FileExistsForShellExt(pszStart))
+        {
+            if (pszStart != pszPath)
+            {
+                memmove(pszPath, pszStart, (wcslen(pszStart) + 1) * sizeof(WCHAR));
+            }
+            return S_OK;
+        }
+    }
+
+    // Legacy MSIX execution alias, kept for Store installs.
+    WCHAR szUserPath[MAX_PATH + 20] = { 0 };
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, szUserPath)))
+    {
+        StringCchPrintf(pszPath, MAX_PATH, L"%s\\AppData\\Local\\Microsoft\\WindowsApps\\%s",
+            szUserPath, pszAliasExecName);
+        if (FileExistsForShellExt(pszPath))
+        {
+            return S_OK;
+        }
+    }
+
+    // Next to the shell extension DLL (portable layout).
+    WCHAR szModule[MAX_PATH] = { 0 };
+    if (GetModuleFileNameW(g_hInst, szModule, ARRAYSIZE(szModule)))
+    {
+        WCHAR *pszSlash = wcsrchr(szModule, L'\\');
+        if (pszSlash)
+        {
+            *(pszSlash + 1) = L'\0';
+            StringCchPrintf(pszPath, MAX_PATH, L"%s%s", szModule, pszExecName);
+            if (FileExistsForShellExt(pszPath))
+            {
+                return S_OK;
+            }
+        }
+    }
+
+    // Last resort: the legacy alias path, so an uninstalled app fails the same
+    // way it did before.
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, szUserPath)))
+    {
+        StringCchPrintf(pszPath, MAX_PATH, L"%s\\AppData\\Local\\Microsoft\\WindowsApps\\%s",
+            szUserPath, pszAliasExecName);
+        return S_OK;
+    }
+
+    return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 }
 
 DWORD CExplorerCommandVerb::_ThreadProc()
@@ -224,7 +313,7 @@ DWORD CExplorerCommandVerb::_ThreadProc()
     if (SUCCEEDED(hr))
     {
         WCHAR szExecPath[MAX_PATH + 20] = { 0 };
-        hr = ResolveWindowsAppExePath(c_szAliasExecName, szExecPath);
+        hr = ResolveWindowsAppExePath(c_szExecName, c_szAliasExecName, szExecPath);
         if (SUCCEEDED(hr))
         {
             sunjwbase::tstring tstrExecPath(szExecPath); // executable path

@@ -204,20 +204,87 @@ namespace SunJWBase
             return strSize;
         }
 
+        private static string GetUnpackagedSettingsFilePath()
+        {
+            string strDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "fHash");
+            Directory.CreateDirectory(strDir);
+            return Path.Combine(strDir, "settings.ini");
+        }
+
+        private static Dictionary<string, string> LoadUnpackagedSettings()
+        {
+            Dictionary<string, string> settings = new(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                string strFile = GetUnpackagedSettingsFilePath();
+                if (!File.Exists(strFile))
+                {
+                    return settings;
+                }
+                foreach (string line in File.ReadAllLines(strFile))
+                {
+                    int idx = line.IndexOf('=');
+                    if (idx <= 0)
+                    {
+                        continue;
+                    }
+                    settings[line[..idx]] = line[(idx + 1)..];
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return settings;
+        }
+
         public static void SaveLocalSettings(string key, object val)
         {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-            localSettings.Values[key] = val;
+            if (Win32Helper.IsAppPackaged())
+            {
+                ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+                localSettings.Values[key] = val;
+                return;
+            }
+
+            try
+            {
+                Dictionary<string, string> settings = LoadUnpackagedSettings();
+                settings[key] = val?.ToString() ?? string.Empty;
+                List<string> lines = [];
+                foreach (KeyValuePair<string, string> kv in settings)
+                {
+                    lines.Add(kv.Key + "=" + kv.Value);
+                }
+                File.WriteAllLines(GetUnpackagedSettingsFilePath(), lines);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public static object LoadLocalSettings(string key)
         {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-            if (localSettings.Values.ContainsKey(key))
+            if (Win32Helper.IsAppPackaged())
             {
-                return localSettings.Values[key];
+                ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+                if (localSettings.Values.ContainsKey(key))
+                {
+                    return localSettings.Values[key];
+                }
+                return null;
             }
-            return null;
+
+            Dictionary<string, string> settings = LoadUnpackagedSettings();
+            if (!settings.TryGetValue(key, out string strValue))
+            {
+                return null;
+            }
+            if (bool.TryParse(strValue, out bool boolValue))
+            {
+                return boolValue;
+            }
+            return strValue;
         }
     }
 }

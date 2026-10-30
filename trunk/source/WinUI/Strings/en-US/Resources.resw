@@ -165,6 +165,9 @@
   <data name="MenuItemVirusTotal" xml:space="preserve">
     <value>Search VirusTotal</value>
   </data>
+  <data name="AboutInfoCRC32" xml:space="preserve">
+    <value>CRC32 implementation copyright (C) Dominik Reichl</value>
+  </data>
   <data name="AboutInfoMD5" xml:space="preserve">
     <value>MD5 implementation copyright (C) RSA Data Security, Inc.</value>
   </data>

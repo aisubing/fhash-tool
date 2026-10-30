@@ -1,5 +1,5 @@
 ### An open source files hash calculator for Windows and macOS.
- * MD5, SHA1, SHA256 and SHA512.
+ * MD5, SHA1, SHA256, SHA512 and CRC32.
  * Support drag & drop.
  * Integrated with context menu in Explorer/Finder.
  * Support Windows 7 (fHash legacy only), Windows 10 (1903) and later (x64 and arm64).
@@ -16,19 +16,32 @@ Project site: https://github.com/sunjw/fhash
 ### DOWNLOAD & INSTALL
 | Platform ||
 | --- | --- |
-| Windows 10 and later (Store) | [![Image of Microsoft Store](https://raw.githubusercontent.com/sunjw/fhash/master/assets/Microsoft_English_L.png)](https://www.microsoft.com/store/apps/9P4CLCRV93DQ) |
-| macOS | [![Image of GitHub](https://raw.githubusercontent.com/sunjw/fhash/master/assets/GitHub_Logo_White.png)](https://github.com/sunjw/fhash/releases/latest) |
+| Windows 10 and later (x64 installer) | [![Image of GitHub](https://raw.githubusercontent.com/sunjw/fhash/master/assets/GitHub_Logo_White.png)](../../releases/latest) |
+| macOS | [![Image of GitHub](https://raw.githubusercontent.com/sunjw/fhash/master/assets/GitHub_Logo_White.png)](../../releases/latest) |
 
-#### WinGet
-```
-winget install fHash
-```
+#### Windows installer
+Download `fHash-<version>-x64-setup.exe` from Releases and run it.
+
+* Installs per user to `%LOCALAPPDATA%\Programs\fHash`, so no administrator rights are required.
+* Adds the "Hash with fHash" Explorer context menu and a Start Menu shortcut.
+* Uninstalls from Settings > Apps.
+* The installer is not code-signed, so SmartScreen may show "Windows protected your PC". Choose "More info" > "Run anyway".
 
 #### Homebrew
 ```
 brew tap sunjw/tap
 brew install --cask fhash
 ```
+
+### BUILD THE WINDOWS INSTALLER
+Requires Visual Studio 2022/2026 with the C++ and .NET 10 tooling, plus Inno Setup 6 or 7.
+
+```
+pwsh trunk\package_win_wui.ps1
+```
+
+The installer is written to `trunk\out`. The GitHub Actions workflow
+`.github/workflows/build-windows-installer.yml` runs the same script.
 
 ### LICENSE
 GPL 2.0 for codes hosted on GitHub.   
